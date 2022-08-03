@@ -12,6 +12,7 @@ import type {
   Identifier,
   LVal,
   Node,
+  ObjectExpression,
   ObjectPattern,
   ObjectProperty,
   Program,
@@ -38,10 +39,7 @@ export const transformDefineModel = (
   let modelDeclKind: string | undefined
   let modelDestructureDecl: ObjectPattern | undefined
   const modelIdentifiers = new Set<Identifier>()
-  const v2Model: {
-    event: string
-    prop: string
-  } = { prop: '', event: '' }
+  const modelVue2: { event: string; prop: string } = { prop: '', event: '' }
 
   function processDefinePropsOrEmits(node: Node, declId?: LVal) {
     let type: 'props' | 'emits'
@@ -144,35 +142,34 @@ export const transformDefineModel = (
     return true
   }
 
-  function processV2Model(node: Node) {
+  function processVue2Model(node: Node) {
     // model: {
     //   prop: 'checked',
     //   event: 'change'
     // }
     if (node.type === 'ObjectExpression') {
       const model = node.properties.find(
-        (item) =>
-          item.type === 'ObjectProperty' &&
-          item.key.type === 'Identifier' &&
-          item.key.name === 'model' &&
-          item.value.type === 'ObjectExpression' &&
-          item.value.properties.length === 2
+        (prop) =>
+          prop.type === 'ObjectProperty' &&
+          prop.key.type === 'Identifier' &&
+          prop.key.name === 'model' &&
+          prop.value.type === 'ObjectExpression' &&
+          prop.value.properties.length === 2
       ) as ObjectProperty
 
-      if (model && model.value.type === 'ObjectExpression') {
-        model.value.properties.forEach((propertyItem) => {
-          if (
-            propertyItem.type === 'ObjectProperty' &&
-            propertyItem.key.type === 'Identifier' &&
-            propertyItem.value.type === 'StringLiteral' &&
-            ['prop', 'event'].includes(propertyItem.key.name)
-          ) {
-            const key = propertyItem.key.name as 'prop' | 'event'
-            v2Model[key] = propertyItem.value.value
-          }
-        })
-        return true
-      }
+      if (!model) return false
+      ;(model.value as ObjectExpression).properties.forEach((propertyItem) => {
+        if (
+          propertyItem.type === 'ObjectProperty' &&
+          propertyItem.key.type === 'Identifier' &&
+          propertyItem.value.type === 'StringLiteral' &&
+          ['prop', 'event'].includes(propertyItem.key.name)
+        ) {
+          const key = propertyItem.key.name as 'prop' | 'event'
+          modelVue2[key] = propertyItem.value.value
+        }
+      })
+      return true
     }
     return false
   }
@@ -237,8 +234,8 @@ export const transformDefineModel = (
 
   function getEventKey(key: string) {
     if (version === 2) {
-      if (v2Model.prop === key) {
-        return v2Model.event
+      if (modelVue2.prop === key) {
+        return modelVue2.event
       } else if (key === 'value') {
         return 'input'
       }
@@ -302,16 +299,24 @@ export const transformDefineModel = (
   // const endOffset = scriptSetup.loc.end.offset
 
   const s = new MagicString(code)
-  if (scriptSetup.scriptAst && scriptSetup.scriptAst.length > 0) {
+
+  if (
+    version === 2 &&
+    scriptSetup.scriptAst &&
+    scriptSetup.scriptAst.length > 0
+  ) {
+    // process normal <script>
     for (const node of scriptSetup.scriptAst as Statement[]) {
       if (node.type === 'ExportDefaultDeclaration') {
         const declaration = node.declaration
         if (declaration.type === 'ObjectExpression') {
-          processV2Model(declaration)
+          processVue2Model(declaration)
         }
       }
     }
   }
+
+  // process <script setup>
   for (const node of scriptSetup.scriptSetupAst as Statement[]) {
     if (node.type === 'ExpressionStatement') {
       processDefinePropsOrEmits(node.expression)
