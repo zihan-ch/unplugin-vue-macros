@@ -14,7 +14,7 @@ export type OptionsResolved = Omit<Required<Options>, 'exclude'> & {
 
 function resolveOption(options: Options): OptionsResolved {
   return {
-    include: [/\.vue$/, /(\.vue|\.setup\.[cm]?[jt]sx?)\?vue/],
+    include: [/[cm]?[jt]sx?/, /\.vue$/, /(\.vue|\.setup\.[cm]?[jt]sx?)\?vue/],
     ...options,
   }
 }

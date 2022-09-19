@@ -1,5 +1,16 @@
 // Vitest Snapshot v1
 
+exports[`fixtures > tests/fixtures/basic.jsx 1`] = `
+"import { defineComponent, createVNode } from 'vue';
+
+defineComponent({
+  setup() {
+    return () => createVNode(\\"div\\", null, null);
+  }
+});
+"
+`;
+
 exports[`fixtures > tests/fixtures/basic.vue 1`] = `
 "import { defineComponent, h } from 'vue';
 
@@ -23,6 +34,8 @@ var basic = /* @__PURE__ */ _export_sfc(_sfc_main, [__FILE__]);
 export { basic as default };
 "
 `;
+
+exports[`fixtures > tests/fixtures/error1.vue 1`] = `"unplugin-vue-define-render SyntaxError: bad arguments: defineRender()"`;
 
 exports[`fixtures > tests/fixtures/id.vue 1`] = `
 "import { defineComponent, createVNode, createTextVNode } from 'vue';
@@ -70,6 +83,16 @@ var _export_sfc = (sfc, props) => {
 var tsx = /*#__PURE__*/_export_sfc(_sfc_main, [__FILE__]);
 
 export { tsx as default };
+"
+`;
+
+exports[`fixtures > tests/fixtures/with-return.js 1`] = `
+";
+() => {
+  return () => {
+    console.log(\\"hello world\\");
+  };
+};
 "
 `;
 

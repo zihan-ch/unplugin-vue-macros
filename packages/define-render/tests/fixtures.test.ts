@@ -12,7 +12,7 @@ import VueDefineRender from '../src/rollup'
 
 describe('fixtures', async () => {
   const root = resolve(__dirname, '..')
-  const files = await glob('tests/fixtures/*.{vue,js,ts}', {
+  const files = await glob('tests/fixtures/*.{vue,js,jsx,tsx,tsx}', {
     cwd: root,
     onlyFiles: true,
   })
@@ -21,16 +21,21 @@ describe('fixtures', async () => {
     it(file.replace(/\\/g, '/'), async () => {
       const filepath = resolve(root, file)
 
-      const code = await rollupBuild(filepath, [
-        RollupVue(),
-        RollupVueJsx(),
-        VueDefineRender(),
-        RollupRemoveVueFilePathPlugin(),
-        RollupEsbuildPlugin({
-          target: 'esnext',
-        }),
-      ])
-      expect(code).toMatchSnapshot()
+      const exec = () =>
+        rollupBuild(filepath, [
+          RollupVue(),
+          RollupVueJsx(),
+          VueDefineRender(),
+          RollupRemoveVueFilePathPlugin(),
+          RollupEsbuildPlugin({
+            target: 'esnext',
+          }),
+        ])
+      if (file.includes('error')) {
+        await expect(exec).rejects.toThrowErrorMatchingSnapshot()
+      } else {
+        expect(await exec()).toMatchSnapshot()
+      }
     })
   }
 })
