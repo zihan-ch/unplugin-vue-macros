@@ -3,21 +3,14 @@ import {
   MagicString,
   getLang,
   getTransformResult,
+  sg,
 } from '@vue-macros/common'
-import { js, jsx, ts, tsx } from '@ast-grep/napi'
-
-const isFunction = (kind: string) => kind.includes('function')
 
 export const transfromDefineRender = (code: string, id: string) => {
   if (!code.includes(DEFINE_RENDER)) return
 
   const lang = getLang(id)
-
-  const processor = { js, jsx, ts, tsx, vue: jsx }[lang]
-  if (!processor) {
-    throw new Error(`not supported lang: ${lang}`)
-  }
-  const root = processor.parse(code).root()
+  const root = sg.parse(code, lang, { vue: 'jsx' })
 
   const nodes = root.findAll('defineRender($$$)')
   if (nodes.length === 0) return
@@ -38,22 +31,21 @@ export const transfromDefineRender = (code: string, id: string) => {
     }
 
     // remove ReturnStatement of the parent
-    const returnStmtRange = parents[1]
+    const returnStmt = parents[1]
       .children()
       .find((n) => n.kind() === 'return_statement')
-      ?.range()
 
-    if (returnStmtRange)
-      s.remove(returnStmtRange.start.index, returnStmtRange.end.index)
+    if (returnStmt) s.removeSg(returnStmt)
 
     const lastChild = parents[1].children().at(-1)!
-    const index = returnStmtRange
-      ? returnStmtRange.start.index
+    const index = returnStmt
+      ? returnStmt.range().start.index
       : lastChild.range()[lastChild.kind() === '}' ? 'start' : 'end'].index
 
-    const shouldAddFn = !isFunction(arg.kind()) && arg.kind() !== 'identifier'
+    const shouldAddFn =
+      !sg.isFunction(arg.kind()) && arg.kind() !== 'identifier'
     s.appendLeft(index, `return ${shouldAddFn ? '() => (' : ''}`)
-    s.move(argRng.start.index, argRng.end.index, index)
+    s.moveSg(arg, index)
     if (shouldAddFn) s.appendRight(index, `)`)
 
     const nodeRng = node.range()

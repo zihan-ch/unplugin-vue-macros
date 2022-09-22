@@ -1,5 +1,6 @@
-export * from './vue'
 export * from './ast'
 export * from './constants'
 export * from './magic-string'
+export * as sg from './sg'
 export * from './unplugin'
+export * from './vue'

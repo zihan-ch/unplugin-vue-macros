@@ -68,7 +68,6 @@
     "dev": "tsup --watch"
   },
   "dependencies": {
-    "@ast-grep/napi": "^0.1.5",
     "@rollup/pluginutils": "^4.2.1",
     "@vue-macros/common": "workspace:*",
     "unplugin": "^0.9.5"

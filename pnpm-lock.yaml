@@ -42,12 +42,14 @@ importers:
 
   packages/common:
     specifiers:
+      '@ast-grep/napi': ^0.1.5
       '@babel/parser': ^7.19.1
       '@babel/types': ^7.19.0
       '@vue/compiler-sfc': ^3.2.39
       magic-string: ^0.26.3
       tsup: ^6.2.3
     dependencies:
+      '@ast-grep/napi': 0.1.5
       '@babel/types': 7.19.0
       '@vue/compiler-sfc': 3.2.39
       magic-string: 0.26.3
@@ -109,7 +111,6 @@ importers:
 
   packages/define-render:
     specifiers:
-      '@ast-grep/napi': ^0.1.5
       '@babel/types': ^7.19.0
       '@rollup/pluginutils': ^4.2.1
       '@vue-macros/common': workspace:*
@@ -121,7 +122,6 @@ importers:
       vite: ^3.1.2
       vue: ^3.2.39
     dependencies:
-      '@ast-grep/napi': 0.1.5
       '@rollup/pluginutils': 4.2.1
       '@vue-macros/common': link:../common
       unplugin: 0.9.5_vite@3.1.2
